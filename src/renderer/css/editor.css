@@ -1,0 +1,988 @@
+/* editor.css - テーマ・UIスタイル・クイック編集スタイル */
+
+:root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-text: #ffffff;
+}
+
+/* ダークテーマ（デフォルト） */
+body[data-theme="dark"] {
+  --color-bg-app: #1e1e1e;
+  --color-bg-toolbar: #252526;
+  --color-bg-pane: #1e1e1e;
+  --color-bg-editor: #1e1e1e;
+  --color-bg-preview-outer: #181818;
+  --color-bg-btn: #333333;
+  --color-bg-btn-hover: #444444;
+  --color-bg-btn-active: #2563eb;
+  --color-bg-menu: #252526;
+  --color-text-primary: #cccccc;
+  --color-text-secondary: #888888;
+  --color-border: #3c3c3c;
+  --color-border-subtle: #2d2d2d;
+  --color-focus-ring: rgba(59, 130, 246, 0.6);
+  --color-quick-edit-bg: #2d2d30;
+  --color-tab-bar-bg: #252526;
+  --color-tab-bg: #2d2d2d;
+  --color-tab-active-bg: #1e1e1e;
+  --color-tab-hover-bg: #333333;
+  --color-tab-border: #1e1e1e;
+}
+
+/* ライトテーマ */
+body[data-theme="light"] {
+  --color-bg-app: #ffffff;
+  --color-bg-toolbar: #f3f3f3;
+  --color-bg-pane: #ffffff;
+  --color-bg-editor: #ffffff;
+  --color-bg-preview-outer: #e6e6e6;
+  --color-bg-btn: #e0e0e0;
+  --color-bg-btn-hover: #d0d0d0;
+  --color-bg-btn-active: #3b82f6;
+  --color-bg-menu: #ffffff;
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-border: #cccccc;
+  --color-border-subtle: #e0e0e0;
+  --color-focus-ring: rgba(59, 130, 246, 0.6);
+  --color-quick-edit-bg: #f8f8f8;
+  --color-tab-bar-bg: #f3f3f3;
+  --color-tab-bg: #ececec;
+  --color-tab-active-bg: #ffffff;
+  --color-tab-hover-bg: #f7f7f7;
+  --color-tab-border: #e0e0e0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-app);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* ツールバー */
+.toolbar {
+  height: 40px;
+  background-color: var(--color-bg-toolbar);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--color-border);
+  margin: 0 4px;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.filename {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.filename.is-modified {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* ボタン共通 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-btn);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.btn:hover {
+  background-color: var(--color-bg-btn-hover);
+  border-color: var(--color-border);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+.btn-primary:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.btn-sm {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.btn-icon {
+  padding: 4px 6px;
+}
+
+.layout-btn.active,
+.responsive-btn.active {
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border-color: var(--color-accent);
+}
+
+/* 設定メニュー */
+.settings {
+  position: relative;
+}
+
+.settings-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background-color: var(--color-bg-menu);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  padding: 12px;
+  min-width: 220px;
+  display: none;
+  z-index: 100;
+}
+
+.settings-menu.is-open {
+  display: block;
+}
+
+.settings-menu__title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.settings-group__title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.settings-menu__divider {
+  border: none;
+  border-top: 1px solid var(--color-border-subtle);
+  margin: 8px 0;
+}
+
+.settings-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.settings-option--choice {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.settings-option select {
+  font-size: 12px;
+  padding: 2px 6px;
+  background: var(--color-bg-btn);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+/* タグ囲みダイアログ */
+.wrap-tag-dialog {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-menu);
+  color: var(--color-text-primary);
+  padding: 20px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  max-width: 360px;
+  margin: auto;
+}
+
+.wrap-tag-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.dialog-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.wrap-tag-dialog input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  background: var(--color-bg-editor);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  outline: none;
+}
+
+.wrap-tag-dialog input:focus {
+  border-color: var(--color-accent);
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* クイック編集（インラインCSSエディタ）ウィジェット */
+.quick-edit-widget {
+  background-color: var(--color-quick-edit-bg);
+  border-top: 2px solid var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  position: relative;
+}
+
+.quick-edit-header {
+  height: 28px;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.quick-edit-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.quick-edit-rule-selector {
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+}
+
+.quick-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quick-edit-container {
+  flex: 1;
+  position: relative;
+}
+
+/* タブバー (ツールバー内統合UI) */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: visible;
+  user-select: none;
+  border: none;
+  background: transparent;
+}
+
+.tab-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 6px 0 10px;
+  min-width: 100px;
+  max-width: 190px;
+  background-color: var(--color-bg-btn);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.tab-item:hover {
+  background-color: var(--color-bg-btn-hover);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.tab-item.active {
+  background-color: var(--color-bg-editor);
+  color: var(--color-text-primary);
+  border-color: var(--color-accent);
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tab-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.tab-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-close-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  flex-shrink: 0;
+  position: relative;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.tab-close-btn:hover {
+  opacity: 1;
+  background-color: rgba(128, 128, 128, 0.25);
+}
+
+/* 未保存時のインジケータ（VS Code方式） */
+.tab-item.is-modified .tab-close-btn::before {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+.tab-item.is-modified .tab-close-btn svg {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.tab-item.is-modified .tab-close-btn:hover::before {
+  opacity: 0;
+}
+
+.tab-item.is-modified .tab-close-btn:hover svg {
+  opacity: 1;
+}
+
+/* 新規タブ追加ボタン */
+.tab-new-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-btn);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.tab-new-btn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-btn-hover);
+  border-color: var(--color-accent);
+}
+
+/* タブ一覧ドロップダウンボタン & メニュー */
+.tab-dropdown-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tab-dropdown-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-btn);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.tab-dropdown-btn:hover,
+.tab-dropdown-btn[aria-expanded="true"] {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-btn-hover);
+  border-color: var(--color-accent);
+}
+
+.tab-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 280px;
+  max-width: 400px;
+  max-height: 420px;
+  overflow-y: auto;
+  background-color: var(--color-bg-menu);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: none;
+  padding: 6px 0;
+}
+
+.tab-dropdown-menu.is-open {
+  display: block;
+}
+
+/* ダイアログ待機中カーソル */
+body.is-dialog-waiting,
+body.is-dialog-waiting * {
+  cursor: wait !important;
+}
+
+.tab-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: 4px;
+}
+
+.tab-dropdown-count {
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+.tab-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  transition: background-color 0.1s ease, color 0.1s ease;
+  position: relative;
+}
+
+.tab-dropdown-item:hover {
+  background-color: var(--color-bg-btn-hover);
+  color: var(--color-text-primary);
+}
+
+.tab-dropdown-item.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.tab-dropdown-item-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-dropdown-item-path {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-dropdown-close-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.tab-dropdown-close-btn:hover {
+  opacity: 1;
+  background-color: rgba(128, 128, 128, 0.25);
+}
+
+.tab-dropdown-item.is-modified .tab-dropdown-close-btn::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  pointer-events: none;
+}
+
+.tab-dropdown-item.is-modified .tab-dropdown-close-btn svg {
+  opacity: 0;
+}
+
+.tab-dropdown-item.is-modified .tab-dropdown-close-btn:hover::before {
+  opacity: 0;
+}
+
+.tab-dropdown-item.is-modified .tab-dropdown-close-btn:hover svg {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   ドラッグ＆ドロップ用オーバーレイ
+   ========================================================================== */
+body.is-dragging-file iframe {
+  pointer-events: none !important;
+}
+
+.drag-drop-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  align-items: center;
+  justify-content: center;
+  pointer-events: none !important;
+}
+
+.drag-drop-overlay * {
+  pointer-events: none !important;
+}
+
+body.is-dragging-file .drag-drop-overlay {
+  display: flex;
+}
+
+.drag-drop-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 48px;
+  background-color: var(--color-bg-menu);
+  border: 2px dashed var(--color-accent);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--color-accent);
+  color: var(--color-text-primary);
+  pointer-events: none;
+}
+
+.drag-drop-modal svg {
+  fill: var(--color-accent);
+}
+
+.drag-drop-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ==========================================================================
+   ショートカットキー一覧ダイアログ
+   ========================================================================== */
+.shortcuts-dialog {
+  border: none;
+  background: transparent;
+  padding: 0;
+  max-width: 640px;
+  width: 90%;
+  margin: auto;
+}
+
+.shortcuts-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.shortcuts-modal {
+  background-color: var(--color-bg-menu);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  overflow: hidden;
+  color: var(--color-text-primary);
+}
+
+.shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.shortcuts-title {
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.shortcuts-title svg {
+  fill: var(--color-accent);
+}
+
+.shortcuts-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.shortcuts-close-btn:hover {
+  background-color: var(--color-bg-btn-hover);
+  color: var(--color-text-primary);
+}
+
+.shortcuts-filter-bar {
+  padding: 12px 20px 8px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.shortcuts-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: var(--color-bg-app);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.shortcuts-search-input:focus {
+  border-color: var(--color-accent);
+}
+
+.shortcuts-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shortcut-category {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shortcut-category-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  margin-bottom: 2px;
+}
+
+.shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.shortcut-row:hover {
+  background-color: rgba(128, 128, 128, 0.08);
+}
+
+.shortcut-desc {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shortcut-note {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.shortcut-key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-btn);
+  border: 1px solid var(--color-border);
+  border-bottom: 2px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.shortcut-key-plus {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.shortcuts-empty {
+  text-align: center;
+  padding: 30px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   Monaco Editor 検索・置換ウィジェット (「すべて置き換え」ボタンの強化・日本語化)
+   ========================================================================== */
+.monaco-editor .find-widget {
+  min-width: 500px !important;
+  max-width: calc(100% - 24px) !important;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 2px 6px 4px;
+}
+
+/* 置換行のアクション領域 */
+.monaco-editor .find-widget > .replace-part .replace-actions {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  height: 25px;
+  padding-left: 4px;
+}
+
+/* 置換ボタン & すべて置き換えボタンの共通ボタンスタイル */
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace,
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace-all {
+  width: auto !important;
+  height: 22px !important;
+  padding: 0 6px !important;
+  border-radius: 4px;
+  font-size: 11px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-btn);
+  color: var(--color-text-primary);
+  transition: all 0.15s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+/* アイコンフォントの保持 */
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace::before,
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace-all::before {
+  font-family: codicon !important;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* 「置換」ボタンのラベル表示 */
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace::after {
+  content: "置換";
+  margin-left: 4px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 「すべて置き換え」ボタンのラベル表示 & 強調スタイル */
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace-all::after {
+  content: "すべて置き換え";
+  margin-left: 4px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 通常のホバー状態 */
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace:hover:not(.disabled) {
+  background-color: var(--color-bg-btn-hover) !important;
+  border-color: var(--color-accent);
+}
+
+/* 「すべて置き換え」ボタンのホバー状態（アクセントカラーで強調） */
+.monaco-editor .find-widget .replace-actions .button.codicon-find-replace-all:hover:not(.disabled) {
+  background-color: var(--color-accent) !important;
+  border-color: var(--color-accent);
+  color: #ffffff !important;
+}
+
+/* ボタン押下時 */
+.monaco-editor .find-widget .replace-actions .button:active:not(.disabled) {
+  transform: translateY(1px);
+}
+
+/* 無効（disabled）状態 */
+.monaco-editor .find-widget .replace-actions .button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  background-color: var(--color-bg-btn) !important;
+  border-color: var(--color-border-subtle) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+
+
+
+

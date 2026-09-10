@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML Editor</title>
+  <link rel="stylesheet" href="vendor/codemirror.css" />
+  <link rel="stylesheet" href="editor.css" />
+</head>
+<body>
+  <header class="toolbar">
+    <button type="button" id="newFile">新規</button>
+    <button type="button" id="openFile">開く</button>
+    <button type="button" id="saveFile">保存</button>
+    <div class="settings" id="settings">
+      <button
+        type="button"
+        id="settingsButton"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="settingsMenu">
+        設定
+      </button>
+      <div
+        class="settings-menu"
+        id="settingsMenu"
+        role="dialog"
+        aria-labelledby="settingsMenuTitle">
+        <p class="settings-menu__title" id="settingsMenuTitle">設定</p>
+        <div class="settings-group" role="group" aria-labelledby="settingsThemeTitle">
+          <p class="settings-group__title" id="settingsThemeTitle">テーマ</p>
+          <label class="settings-option settings-option--choice" aria-checked="false">
+            <input type="radio" name="theme" value="dark" data-settings-initial-focus />
+            <span>ダーク</span>
+          </label>
+          <label class="settings-option settings-option--choice" aria-checked="false">
+            <input type="radio" name="theme" value="light" />
+            <span>ライト</span>
+          </label>
+          <label class="settings-option settings-option--choice" aria-checked="false">
+            <input type="radio" name="theme" value="system" />
+            <span>システムに合わせる</span>
+          </label>
+        </div>
+        <hr class="settings-menu__divider" />
+        <div class="settings-group" role="group" aria-labelledby="settingsEditorTitle">
+          <p class="settings-group__title" id="settingsEditorTitle">エディタ</p>
+          <label class="settings-option settings-option--select">
+            <span class="settings-option__label">フォントサイズ</span>
+            <select id="editorFontSize">
+              <option value="12">12 px</option>
+              <option value="14">14 px</option>
+              <option value="16">16 px</option>
+              <option value="18">18 px</option>
+            </select>
+          </label>
+          <label class="settings-option settings-option--select">
+            <span class="settings-option__label">タブ幅</span>
+            <select id="editorTabSize">
+              <option value="2">2</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+          <label class="settings-option settings-option--toggle">
+            <span class="settings-option__label">行番号を表示</span>
+            <input type="checkbox" id="editorLineNumbers" />
+          </label>
+          <label class="settings-option settings-option--toggle">
+            <span class="settings-option__label">自動折り返し</span>
+            <input type="checkbox" id="editorLineWrap" />
+          </label>
+        </div>
+      </div>
+    </div>
+    <span class="filename" id="currentFile" aria-live="polite"></span>
+  </header>
+  <main class="workspace">
+    <section class="pane preview-pane" aria-label="プレビュー">
+      <iframe id="preview" title="HTMLプレビュー" sandbox="allow-scripts allow-same-origin"></iframe>
+    </section>
+    <div
+      class="splitter"
+      id="paneSplitter"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="プレビューとエディタの境界"
+      tabindex="0"></div>
+    <section class="pane editor-pane" aria-label="エディタ">
+      <textarea
+        id="editor"
+        spellcheck="false"
+        autocapitalize="off"
+        autocomplete="off"
+        autocorrect="off"
+        placeholder="ここにHTMLを入力してください"></textarea>
+    </section>
+  </main>
+  <script src="vendor/codemirror.js"></script>
+  <script src="vendor/xml.js"></script>
+  <script src="vendor/javascript.js"></script>
+  <script src="vendor/css.js"></script>
+  <script src="vendor/htmlmixed.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hisa HTML Editor</title>
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/editor.css" />
+</head>
+<body data-theme="dark">
+  <!-- ツールバー -->
+  <header class="toolbar">
+    <div class="toolbar-group">
+      <button type="button" id="newFile" class="btn" title="新規作成 (Ctrl+N)">新規</button>
+      <button type="button" id="openFile" class="btn" title="開く (Ctrl+O)">開く</button>
+      <button type="button" id="saveFile" class="btn" title="上書き保存 (Ctrl+S)">保存</button>
+      <button type="button" id="saveAsFile" class="btn" title="名前を付けて保存 (Ctrl+Shift+S)">別名保存</button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- レイアウト分割切替 -->
+    <div class="toolbar-group" role="radiogroup" aria-label="画面レイアウト">
+      <button type="button" class="btn btn-icon layout-btn active" data-layout="split-h" title="左右分割 (Ctrl+1)">
+        <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3zm1 0v10h5V3H2zm7 0v10h5V3H9z"/></svg>
+      </button>
+      <button type="button" class="btn btn-icon layout-btn" data-layout="split-v" title="上下分割 (Ctrl+2)">
+        <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3zm1 0v4h12V3H2zm0 6v4h12V9H2z"/></svg>
+      </button>
+      <button type="button" class="btn btn-icon layout-btn" data-layout="editor-only" title="エディタのみ (Ctrl+3)">
+        <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3zm1 1v8h12V4H2z"/></svg>
+      </button>
+      <button type="button" class="btn btn-icon layout-btn" data-layout="preview-only" title="プレビューのみ (Ctrl+4)">
+        <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3zm2 2h8v2H3V5zm0 3h8v2H3V8zm0 3h5v2H3v-2z"/></svg>
+      </button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- レスポンシブプレビュー切替 -->
+    <div class="toolbar-group responsive-group" role="radiogroup" aria-label="プレビュー表示幅">
+      <button type="button" class="btn btn-sm responsive-btn active" data-device="full" title="フルサイズ (100%)">PC</button>
+      <button type="button" class="btn btn-sm responsive-btn" data-device="tablet" title="タブレット (768px)">タブレット</button>
+      <button type="button" class="btn btn-sm responsive-btn" data-device="mobile" title="スマートフォン (375px)">スマホ</button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- ツール機能 -->
+    <div class="toolbar-group">
+      <button type="button" id="openImageMapBtn" class="btn" title="イメージMAPビジュアルエディターを開く (Alt+M)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11zM2.5 2a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-11z"/>
+          <path d="M4 4h4v3H4V4zm5 0h3v5H9V4zM4 8h4v4H4V8zm5 4h3v-2H9v2z"/>
+        </svg>
+        イメージMAP
+      </button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- 設定メニュー -->
+    <div class="settings" id="settings">
+      <button
+        type="button"
+        id="settingsButton"
+        class="btn"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="settingsMenu">
+        設定
+      </button>
+      <div
+        class="settings-menu"
+        id="settingsMenu"
+        role="dialog"
+        aria-labelledby="settingsMenuTitle">
+        <p class="settings-menu__title" id="settingsMenuTitle">設定</p>
+        <div class="settings-group" role="group" aria-labelledby="settingsThemeTitle">
+          <p class="settings-group__title" id="settingsThemeTitle">テーマ</p>
+          <label class="settings-option settings-option--choice">
+            <input type="radio" name="theme" value="dark" checked />
+            <span>ダーク</span>
+          </label>
+          <label class="settings-option settings-option--choice">
+            <input type="radio" name="theme" value="light" />
+            <span>ライト</span>
+          </label>
+          <label class="settings-option settings-option--choice">
+            <input type="radio" name="theme" value="system" />
+            <span>システムに合わせる</span>
+          </label>
+        </div>
+        <hr class="settings-menu__divider" />
+        <div class="settings-group" role="group" aria-labelledby="settingsEditorTitle">
+          <p class="settings-group__title" id="settingsEditorTitle">エディタ</p>
+          <label class="settings-option settings-option--select">
+            <span class="settings-option__label">フォントサイズ</span>
+            <select id="editorFontSize">
+              <option value="12">12 px</option>
+              <option value="14" selected>14 px</option>
+              <option value="16">16 px</option>
+              <option value="18">18 px</option>
+            </select>
+          </label>
+          <label class="settings-option settings-option--select">
+            <span class="settings-option__label">タブ幅</span>
+            <select id="editorTabSize">
+              <option value="2" selected>2</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+          <label class="settings-option settings-option--toggle">
+            <span class="settings-option__label">行番号を表示</span>
+            <input type="checkbox" id="editorLineNumbers" checked />
+          </label>
+          <label class="settings-option settings-option--toggle">
+            <span class="settings-option__label">自動折り返し</span>
+            <input type="checkbox" id="editorLineWrap" checked />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- タブバー (ツールバー内統合) -->
+    <nav class="tab-bar" id="tabBar" role="tablist" aria-label="ドキュメントタブ">
+      <div class="tab-list" id="tabList"></div>
+      <button type="button" class="tab-new-btn" id="newTabBtn" title="新規タブ (Ctrl+N)" aria-label="新規タブ">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="8" y1="3" x2="8" y2="13"></line>
+          <line x1="3" y1="8" x2="13" y2="8"></line>
+        </svg>
+      </button>
+
+      <!-- タブ一覧ボタン & ドロップダウン -->
+      <div class="tab-dropdown-container" id="tabDropdownContainer">
+        <button type="button" class="tab-dropdown-btn" id="tabDropdownBtn" title="開いているタブ一覧" aria-label="開いているタブ一覧" aria-haspopup="menu" aria-expanded="false">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+            <path d="M3.2 5.5a.8.8 0 0 1 1.13 0L8 9.17l3.67-3.67a.8.8 0 0 1 1.13 1.13l-4.24 4.24a.8.8 0 0 1-1.13 0L3.2 6.63a.8.8 0 0 1 0-1.13z"/>
+          </svg>
+        </button>
+        <div class="tab-dropdown-menu" id="tabDropdownMenu" role="menu" aria-label="開いているタブ一覧"></div>
+      </div>
+    </nav>
+
+    <span class="filename" id="currentFile" aria-live="polite"></span>
+  </header>
+
+  <!-- ワークスペース（スプリット） -->
+  <main class="workspace layout-split-h" id="workspace">
+    <!-- プレビューペイン -->
+    <section class="pane preview-pane" id="previewPane" aria-label="プレビュー">
+      <div class="responsive-wrapper device-full" id="responsiveWrapper">
+        <iframe id="preview" title="HTMLプレビュー" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </section>
+
+    <!-- スプリッター境界 -->
+    <div
+      class="splitter"
+      id="paneSplitter"
+      role="separator"
+      aria-label="プレビューとエディタの境界"
+      tabindex="0"></div>
+
+    <!-- エディタペイン -->
+    <section class="pane editor-pane" id="editorPane" aria-label="エディタ">
+      <div id="monacoEditorContainer" class="monaco-container"></div>
+    </section>
+  </main>
+
+  <!-- タグ囲み入力ダイアログ (Alt+W) -->
+  <dialog id="wrapTagDialog" class="wrap-tag-dialog">
+    <form method="dialog" id="wrapTagForm">
+      <p class="dialog-title">タグで囲む (Wrap with Abbreviation)</p>
+      <input type="text" id="wrapTagInput" placeholder="例: div.container または p または a[href=#]" autofocus />
+      <div class="dialog-buttons">
+        <button type="button" id="wrapTagCancel" class="btn">キャンセル</button>
+        <button type="submit" id="wrapTagSubmit" class="btn btn-primary">適用</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ドラッグ＆ドロップ用オーバーレイ -->
+  <div id="dragDropOverlay" class="drag-drop-overlay" aria-hidden="true">
+    <div class="drag-drop-modal">
+      <svg viewBox="0 0 24 24" width="48" height="48">
+        <path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+      </svg>
+      <span class="drag-drop-title">ファイルをドロップしてタブに追加</span>
+    </div>
+  </div>
+
+  <!-- ショートカットキー一覧ダイアログ -->
+  <dialog id="shortcutsDialog" class="shortcuts-dialog" aria-labelledby="shortcutsDialogTitle">
+    <div class="shortcuts-modal">
+      <div class="shortcuts-header">
+        <h2 class="shortcuts-title" id="shortcutsDialogTitle">
+          <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
+            <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v7A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 13.5 3h-11zM2 4.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-7zM3 6h2v1H3V6zm3 0h2v1H6V6zm3 0h2v1H9V6zm3 0h1v1h-1V6zM3 8h1v1H3V8zm2 0h2v1H5V8zm3 0h2v1H8V8zm3 0h2v1h-2V8zM5 10h6v1H5v-1z"/>
+          </svg>
+          キーボードショートカット一覧
+        </h2>
+        <button type="button" id="shortcutsCloseBtn" class="shortcuts-close-btn" aria-label="閉じる">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="3" x2="13" y2="13"></line>
+            <line x1="13" y1="3" x2="3" y2="13"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="shortcuts-filter-bar">
+        <input type="text" id="shortcutsSearchInput" class="shortcuts-search-input" placeholder="ショートカットを検索 (例: 保存, タブ, Emmet, 分割...)" />
+      </div>
+      <div class="shortcuts-body" id="shortcutsBody"></div>
+    </div>
+  </dialog>
+
+  <!-- メインスクリプト -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

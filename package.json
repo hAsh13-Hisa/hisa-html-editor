@@ -1,0 +1,63 @@
+{
+  "name": "hisa-html-editor",
+  "version": "2.2.0",
+  "description": "Dreamweaver代替の基本編集機能を備えた高機能デスクトップHTMLエディタ",
+  "type": "module",
+  "main": "src/main/index.js",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "build:renderer": "vite build",
+    "build:win": "vite build && electron-builder --win dir && node scripts/make-portable-zip.js",
+    "build:mac": "vite build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip",
+    "pack": "vite build && electron-builder --dir"
+  },
+  "keywords": [
+    "html-editor",
+    "dreamweaver-alternative",
+    "electron",
+    "monaco-editor"
+  ],
+  "author": "Hisa",
+  "license": "MIT",
+  "dependencies": {
+    "emmet-monaco-es": "^5.4.1",
+    "encoding-japanese": "^2.3.0",
+    "mime-types": "^2.1.35",
+    "monaco-editor": "^0.52.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.2.0"
+  },
+  "build": {
+    "appId": "com.hisa.htmleditor",
+    "productName": "Hisa HTML Editor",
+    "directories": {
+      "output": "dist-package"
+    },
+    "files": [
+      "dist/**/*",
+      "src/main/**/*",
+      "src/preload/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "dir"
+      ],
+      "icon": "assets/icon.ico",
+      "sign": null,
+      "signAndEditExecutable": false
+    },
+    "mac": {
+      "target": [
+        "zip"
+      ],
+      "icon": "assets/icon.png",
+      "category": "public.app-category.developer-tools"
+    }
+  }
+}

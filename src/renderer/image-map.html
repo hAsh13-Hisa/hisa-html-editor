@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>イメージMAPビジュアルエディター</title>
+  <link rel="stylesheet" href="css/image-map.css" />
+</head>
+<body data-theme="dark">
+  <!-- トップツールバー -->
+  <header class="toolbar">
+    <div class="toolbar-group">
+      <button type="button" id="btnOpenImage" class="btn" title="画像ファイルを開く">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M4 3a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v4.586l-2.293-2.293a1 1 0 0 0-1.414 0L6.5 10.086 5.207 8.793a1 1 0 0 0-1.414 0L3 9.586V5a1 1 0 0 1 1-1zm8 8H4a1 1 0 0 1-.88-.52l1.673-1.673 1.293 1.293a1 1 0 0 0 1.414 0L10.5 9.086l2.38 2.38A1 1 0 0 1 12 12zm-6-6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+        </svg>
+        画像を開く...
+      </button>
+      <button type="button" id="btnImportHtml" class="btn" title="既存のHTML mapタグを読み込んでビジュアル表示">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8l3.147-3.146zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8l-3.147-3.146z"/>
+        </svg>
+        HTMLをインポート
+      </button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- 描画ツール群 -->
+    <div class="toolbar-group" role="radiogroup" aria-label="描画ツール">
+      <button type="button" class="btn btn-icon tool-btn active" data-tool="select" title="選択・移動ツール (ポインタ)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .557.103z"/>
+        </svg>
+        選択
+      </button>
+      <button type="button" class="btn btn-icon tool-btn" data-tool="rect" title="矩形ツール (四角形エリアを描画)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="12" height="10" rx="1" />
+        </svg>
+        矩形
+      </button>
+      <button type="button" class="btn btn-icon tool-btn" data-tool="circle" title="円形ツール (円形エリアを描画)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="8" cy="8" r="6" />
+        </svg>
+        円形
+      </button>
+      <button type="button" class="btn btn-icon tool-btn" data-tool="poly" title="多角形ツール (頂点をクリックして多角形を描画、始点またはダブルクリックで完了)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="8,2 14,7 12,14 4,14 2,7" />
+        </svg>
+        多角形
+      </button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- ズーム選択 -->
+    <div class="toolbar-group">
+      <label for="zoomSelect" class="toolbar-label">表示倍率:</label>
+      <select id="zoomSelect" class="select-sm">
+        <option value="fit">画面に合わせる</option>
+        <option value="50">50%</option>
+        <option value="100" selected>100% (原寸)</option>
+        <option value="150">150%</option>
+        <option value="200">200%</option>
+      </select>
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <!-- アクションボタン -->
+    <div class="toolbar-group">
+      <button type="button" id="btnCopyHtml" class="btn" title="生成されたHTMLをクリップボードにコピー">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+          <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+        </svg>
+        タグをコピー
+      </button>
+      <button type="button" id="btnUpdateEditor" class="btn" title="本体エディタの既存MAPタグを更新" disabled>
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+          <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+        </svg>
+        タグを更新
+      </button>
+      <button type="button" id="btnInsertToEditor" class="btn btn-primary" title="本体エディタのカーソル位置にタグを新規挿入">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg>
+        タグを挿入
+      </button>
+    </div>
+  </header>
+
+  <!-- ワークスペース -->
+  <main class="workspace">
+    <!-- キャンバス領域（ステージ） -->
+    <div class="stage-container" id="stage">
+      <div class="stage-content" id="stageContent" style="display: none;">
+        <img id="mapImage" alt="イメージマップ対象画像" />
+        <svg id="mapSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <!-- 画像未設定時のプレースホルダー -->
+      <div class="empty-placeholder" id="emptyPlaceholder">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <p class="empty-text">画像ファイルを開くか、ここにドラッグ＆ドロップしてください</p>
+        <p class="empty-subtext">PNG, JPG, GIF, WebP, SVG に対応</p>
+      </div>
+    </div>
+
+    <!-- 右側サイドバー（プロパティ・一覧・コード） -->
+    <aside class="sidebar">
+      <!-- 1. マップ基本設定 -->
+      <section class="sidebar-section">
+        <div class="section-header">マップ基本情報</div>
+        <div class="form-grid">
+          <label class="form-label" for="mapNameInput">Map名 (name):</label>
+          <input type="text" id="mapNameInput" class="form-input" value="image-map" />
+
+          <label class="form-label" for="imageSrcInput">画像パス (src):</label>
+          <input type="text" id="imageSrcInput" class="form-input" placeholder="例: images/banner.jpg" />
+
+          <label class="form-label" for="imageAltInput">画像代替 (alt):</label>
+          <input type="text" id="imageAltInput" class="form-input" placeholder="画像の説明" />
+        </div>
+      </section>
+
+      <!-- 2. 選択中エリアのプロパティ -->
+      <section class="sidebar-section">
+        <div class="section-header">
+          <span>選択エリアの属性</span>
+          <button type="button" id="btnDeleteArea" class="btn btn-sm btn-danger" title="選択中のエリアを削除 (Deleteキー)" disabled>削除</button>
+        </div>
+        <div class="form-grid disabled" id="areaPropPanel">
+          <label class="form-label" for="propShape">形状 (shape):</label>
+          <input type="text" id="propShape" class="form-input" readonly value="-" />
+
+          <label class="form-label" for="propCoords">座標 (coords):</label>
+          <input type="text" id="propCoords" class="form-input" placeholder="自動計算" />
+
+          <label class="form-label" for="propHref">リンクURL (href):</label>
+          <input type="text" id="propHref" class="form-input" placeholder="例: page.html または https://..." />
+
+          <label class="form-label" for="propAlt">代替テキスト (alt):</label>
+          <input type="text" id="propAlt" class="form-input" placeholder="例: 詳細を見る" />
+
+          <label class="form-label" for="propTitle">タイトル (title):</label>
+          <input type="text" id="propTitle" class="form-input" placeholder="ツールチップ表示" />
+
+          <label class="form-label" for="propTarget">ターゲット (target):</label>
+          <select id="propTarget" class="form-select">
+            <option value="">(指定なし)</option>
+            <option value="_blank">_blank (新規タブ)</option>
+            <option value="_self">_self (同じ枠)</option>
+            <option value="_parent">_parent</option>
+            <option value="_top">_top</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- 3. エリア一覧（双方向選択） -->
+      <section class="sidebar-section flex-grow">
+        <div class="section-header">
+          <span>エリア一覧</span>
+          <span class="badge" id="areaCountBadge">0</span>
+        </div>
+        <div class="area-list" id="areaList"></div>
+      </section>
+
+      <!-- 4. HTMLコード出力 -->
+      <section class="sidebar-section">
+        <div class="section-header">
+          <span>生成HTMLコード</span>
+          <label class="checkbox-label">
+            <input type="checkbox" id="checkIncludeImg" checked />
+            <span>&lt;img&gt; を含める</span>
+          </label>
+        </div>
+        <textarea id="htmlPreview" class="code-preview" readonly spellcheck="false"></textarea>
+      </section>
+    </aside>
+  </main>
+
+  <!-- ステータスバー -->
+  <footer class="statusbar">
+    <div class="status-item" id="coordStatus">X: 0 px, Y: 0 px</div>
+    <div class="status-item" id="imageInfoStatus">未ロード</div>
+    <div class="status-spacer"></div>
+    <div class="status-item tip-text">ヒント: 矩形ツールでドラッグして範囲指定。クリックで選択・ハンドルでリサイズ。</div>
+  </footer>
+
+  <!-- HTMLインポートモーダルダイアログ -->
+  <dialog id="importDialog" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">HTML / Mapタグをインポート</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          既存の <code>&lt;map&gt;...&lt;/map&gt;</code> または <code>&lt;area&gt;</code> タグを貼り付けてください。<br />
+          タグ内の座標を解析し、画像上にビジュアル配置します。
+        </p>
+        <textarea id="importInput" class="modal-textarea" placeholder="<map name=&quot;example&quot;>&#10;  <area shape=&quot;rect&quot; coords=&quot;34,44,270,350&quot; href=&quot;...&quot;>&#10;</map>"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelImport" class="btn">キャンセル</button>
+        <button type="button" id="btnConfirmImport" class="btn btn-primary">解析してインポート</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- トースト通知 -->
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="js/image-map/image-map-editor.js"></script>
+</body>
+</html>
