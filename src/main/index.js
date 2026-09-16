@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { localPreviewServer } from './local-server.js';
 import { setupIpc } from './ipc.js';
 import { loadWindowState, trackWindowState } from './window-state.js';
+import { setupAutoUpdater, checkForUpdates } from './updater.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -48,6 +49,7 @@ async function createWindow() {
 
   setupIpc(mainWindow);
   setupMenu(mainWindow);
+  setupAutoUpdater(mainWindow);
 
   const devUrl = process.env.VITE_DEV_SERVER_URL;
   if (devUrl) {
@@ -259,6 +261,12 @@ function setupMenu(win) {
           label: 'ショートカットキー一覧 (&K)...',
           accelerator: 'F1',
           click: (item, focusedWindow) => sendAction('showShortcuts', focusedWindow)
+        },
+        {
+          label: '更新を確認 (&U)...',
+          click: () => {
+            checkForUpdates(true);
+          }
         },
         { type: 'separator' },
         {

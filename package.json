@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "node scripts/dev.js",
     "build:renderer": "vite build",
-    "build:win": "vite build && electron-builder --win dir && node scripts/make-portable-zip.js",
+    "build:win": "vite build && electron-builder --win && node scripts/make-portable-zip.js",
+    "publish:win": "vite build && electron-builder --win --publish always && node scripts/make-portable-zip.js",
     "build:mac": "vite build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip",
     "pack": "vite build && electron-builder --dir"
   },
@@ -24,6 +25,7 @@
     "url": "https://github.com/hAsh13-Hisa/hisa-html-editor.git"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "emmet-monaco-es": "^5.4.1",
     "encoding-japanese": "^2.3.0",
     "mime-types": "^2.1.35",
@@ -48,13 +50,30 @@
       "assets/**/*",
       "package.json"
     ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "hAsh13-Hisa",
+        "repo": "hisa-html-editor"
+      }
+    ],
     "win": {
       "target": [
+        "nsis",
         "dir"
       ],
       "icon": "assets/icon.ico",
       "sign": null,
       "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Hisa HTML Editor",
+      "uninstallDisplayName": "Hisa HTML Editor"
     },
     "mac": {
       "target": [
