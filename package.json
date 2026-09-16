@@ -1,6 +1,6 @@
 {
   "name": "hisa-html-editor",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Dreamweaver代替の基本編集機能を備えた高機能デスクトップHTMLエディタ",
   "type": "module",
   "main": "src/main/index.js",
