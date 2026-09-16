@@ -8,13 +8,24 @@
   <link rel="stylesheet" href="css/editor.css" />
 </head>
 <body data-theme="dark">
-  <!-- ツールバー -->
+  <!-- メニュー＆ツールバー統合行 (1行目) -->
   <header class="toolbar">
+    <!-- メニューバー (ファイル, 編集, 表示, ヘルプ) -->
+    <div class="menu-bar" role="menubar" aria-label="アプリケーションメニュー">
+      <button type="button" class="menu-btn" data-menu="file" id="menuBtnFile" aria-haspopup="true">ファイル (&F)</button>
+      <button type="button" class="menu-btn" data-menu="edit" id="menuBtnEdit" aria-haspopup="true">編集 (&E)</button>
+      <button type="button" class="menu-btn" data-menu="view" id="menuBtnView" aria-haspopup="true">表示 (&V)</button>
+      <button type="button" class="menu-btn" data-menu="help" id="menuBtnHelp" aria-haspopup="true">ヘルプ (&H)</button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- ファイル操作 -->
     <div class="toolbar-group">
-      <button type="button" id="newFile" class="btn" title="新規作成 (Ctrl+N)">新規</button>
-      <button type="button" id="openFile" class="btn" title="開く (Ctrl+O)">開く</button>
-      <button type="button" id="saveFile" class="btn" title="上書き保存 (Ctrl+S)">保存</button>
-      <button type="button" id="saveAsFile" class="btn" title="名前を付けて保存 (Ctrl+Shift+S)">別名保存</button>
+      <button type="button" id="newFile" class="btn btn-sm" title="新規作成 (Ctrl+N)">新規</button>
+      <button type="button" id="openFile" class="btn btn-sm" title="開く (Ctrl+O)">開く</button>
+      <button type="button" id="saveFile" class="btn btn-sm" title="上書き保存 (Ctrl+S)">保存</button>
+      <button type="button" id="saveAsFile" class="btn btn-sm" title="名前を付けて保存 (Ctrl+Shift+S)">別名保存</button>
     </div>
 
     <div class="toolbar-divider"></div>
@@ -48,7 +59,43 @@
 
     <!-- ツール機能 -->
     <div class="toolbar-group">
-      <button type="button" id="openImageMapBtn" class="btn" title="イメージMAPビジュアルエディターを開く (Alt+M)">
+      <!-- 外部ブラウザプレビュー (Dreamweaver風) -->
+      <div class="btn-group-dropdown browser-preview-group" id="browserPreviewGroup">
+        <button type="button" id="browserPreviewBtn" class="btn btn-sm" title="ブラウザでプレビュー (F12)">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+            <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 1c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.14-7-7 3.14-7 7-7z"/>
+            <path d="M1 8a7 7 0 0 1 14 0c0 .67-.09 1.32-.26 1.94H1.26A6.97 6.97 0 0 1 1 8zm3.5-5.38A5.99 5.99 0 0 1 8 2c1.33 0 2.55.43 3.5 1.16-.38.86-.94 1.84-1.63 2.84H6.13c-.69-1-1.25-1.98-1.63-2.84z"/>
+          </svg>
+          ブラウザ (F12)
+        </button>
+        <button type="button" id="browserPreviewDropdownBtn" class="btn btn-sm btn-dropdown-arrow" title="プレビューするブラウザを選択" aria-haspopup="menu" aria-expanded="false">
+          <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor">
+            <path d="M3.2 5.5a.8.8 0 0 1 1.13 0L8 9.17l3.67-3.67a.8.8 0 0 1 1.13 1.13l-4.24 4.24a.8.8 0 0 1-1.13 0L3.2 6.63a.8.8 0 0 1 0-1.13z"/>
+          </svg>
+        </button>
+        <div class="browser-preview-dropdown-menu" id="browserPreviewDropdownMenu" role="menu"></div>
+      </div>
+
+      <!-- タグ整合性チェック -->
+      <button type="button" id="checkTagIntegrityBtn" class="btn btn-sm" title="タグ整合性チェック (F7) - 開始/閉じタグの過不足を検証">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+          <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
+        </svg>
+        タグ整合性
+      </button>
+
+      <!-- 複数行検索・置換 -->
+      <button type="button" id="openMultilineFindReplaceBtn" class="btn btn-sm" title="複数行の検索・置換 (Ctrl+Shift+F)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          <path d="M3 4h4v1H3V4zm0 3h6v1H3V7zm0 3h4v1H3v-1z"/>
+        </svg>
+        複数行検索
+      </button>
+
+      <button type="button" id="openImageMapBtn" class="btn btn-sm" title="イメージMAPビジュアルエディターを開く (Alt+M)">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
           <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11zM2.5 2a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-11z"/>
           <path d="M4 4h4v3H4V4zm5 0h3v5H9V4zM4 8h4v4H4V8zm5 4h3v-2H9v2z"/>
@@ -64,7 +111,7 @@
       <button
         type="button"
         id="settingsButton"
-        class="btn"
+        class="btn btn-sm"
         aria-haspopup="dialog"
         aria-expanded="false"
         aria-controls="settingsMenu">
@@ -119,12 +166,19 @@
             <input type="checkbox" id="editorLineWrap" checked />
           </label>
         </div>
+        <hr class="settings-menu__divider" />
+        <div class="settings-group" role="group" aria-labelledby="settingsBrowserTitle">
+          <p class="settings-group__title" id="settingsBrowserTitle">外部ブラウザ</p>
+          <button type="button" class="btn btn-sm" id="openBrowserSettingsFromMenuBtn" style="width:100%; justify-content:center;">
+            ブラウザ設定の管理...
+          </button>
+        </div>
       </div>
     </div>
+  </header>
 
-    <div class="toolbar-divider"></div>
-
-    <!-- タブバー (ツールバー内統合) -->
+  <!-- ファイルタブ専用行 (2行目: 横幅100%まるまる丸ごと!) -->
+  <div class="tab-row" id="tabRow">
     <nav class="tab-bar" id="tabBar" role="tablist" aria-label="ドキュメントタブ">
       <div class="tab-list" id="tabList"></div>
       <button type="button" class="tab-new-btn" id="newTabBtn" title="新規タブ (Ctrl+N)" aria-label="新規タブ">
@@ -146,7 +200,7 @@
     </nav>
 
     <span class="filename" id="currentFile" aria-live="polite"></span>
-  </header>
+  </div>
 
   <!-- ワークスペース（スプリット） -->
   <main class="workspace layout-split-h" id="workspace">
@@ -216,6 +270,168 @@
       <div class="shortcuts-body" id="shortcutsBody"></div>
     </div>
   </dialog>
+
+  <!-- ブラウザプレビュー保存確認ダイアログ (Dreamweaver風) -->
+  <dialog id="browserPreviewConfirmDialog" class="modal-dialog confirm-dialog">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
+            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 1c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.14-7-7 3.14-7 7-7z"/>
+            <path d="M1 8a7 7 0 0 1 14 0c0 .67-.09 1.32-.26 1.94H1.26A6.97 6.97 0 0 1 1 8zm3.5-5.38A5.99 5.99 0 0 1 8 2c1.33 0 2.55.43 3.5 1.16-.38.86-.94 1.84-1.63 2.84H6.13c-.69-1-1.25-1.98-1.63-2.84z"/>
+          </svg>
+          ブラウザでプレビュー
+        </h3>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message">
+          <strong id="browserPreviewConfirmFile">ファイル</strong> には未保存の変更があります。<br />
+          ファイルを保存してからブラウザで開きますか？
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="browserPreviewConfirmSave" class="btn btn-primary">保存してプレビュー</button>
+        <button type="button" id="browserPreviewConfirmDiscard" class="btn">保存せずにプレビュー</button>
+        <button type="button" id="browserPreviewConfirmCancel" class="btn btn-secondary">キャンセル</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ブラウザ設定管理モーダル -->
+  <dialog id="browserSettingsDialog" class="modal-dialog browser-settings-dialog">
+    <div class="modal-box browser-settings-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
+            <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+          </svg>
+          プレビュー用ブラウザの設定
+        </h3>
+        <button type="button" id="browserSettingsCloseBtn" class="shortcuts-close-btn" aria-label="閉じる">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="3" x2="13" y2="13"></line>
+            <line x1="13" y1="3" x2="3" y2="13"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="browser-settings-hint">
+          F12キーを押した際に起動する主ブラウザや、ツールバーから選択できるブラウザソフトを登録・管理します。
+        </p>
+        <div class="browser-settings-actions-top">
+          <button type="button" id="detectBrowsersBtn" class="btn btn-sm">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+              <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+              <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+            </svg>
+            ブラウザを自動検出
+          </button>
+          <button type="button" id="addBrowserBtn" class="btn btn-sm btn-primary">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="3" x2="8" y2="13"></line>
+              <line x1="3" y1="8" x2="13" y2="8"></line>
+            </svg>
+            ブラウザを手動追加 (.exe選択)
+          </button>
+        </div>
+        <div class="browser-settings-list" id="browserSettingsList"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 複数行対応 検索・置換フロートパネル -->
+  <div id="multilineFindReplacePanel" class="multiline-find-replace-panel" role="region" aria-label="複数行検索と置換">
+    <div class="mfr-header" id="mfrHeader">
+      <div class="mfr-title">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          <path d="M3 4h4v1H3V4zm0 3h6v1H3V7zm0 3h4v1H3v-1z"/>
+        </svg>
+        <span>複数行の検索・置換</span>
+      </div>
+      <div class="mfr-header-actions">
+        <span id="mfrMatchCount" class="mfr-match-count"></span>
+        <button type="button" id="mfrBtnClose" class="btn btn-icon btn-sm" title="閉じる (Esc)" aria-label="閉じる">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="mfr-body">
+      <!-- 検索文字列入力 -->
+      <div class="mfr-field-group">
+        <div class="mfr-field-label">
+          <span>検索する文字列 (複数行対応 / Tabキー入力可):</span>
+          <div class="mfr-options">
+            <label class="mfr-opt-label" title="大文字・小文字を区別 (Match Case)">
+              <input type="checkbox" id="mfrOptCase" />
+              <span>Aa</span>
+            </label>
+            <label class="mfr-opt-label" title="単語単位で一致 (Whole Word)">
+              <input type="checkbox" id="mfrOptWord" />
+              <span>\b</span>
+            </label>
+            <label class="mfr-opt-label" title="正規表現を使用 (Regex)">
+              <input type="checkbox" id="mfrOptRegex" />
+              <span>.*</span>
+            </label>
+          </div>
+        </div>
+        <textarea id="mfrSearchInput" class="mfr-textarea" placeholder="検索する複数行HTMLやテキストを入力..." rows="3"></textarea>
+      </div>
+
+      <!-- 置換文字列入力 -->
+      <div class="mfr-field-group">
+        <div class="mfr-field-label">
+          <span>置換後の文字列:</span>
+        </div>
+        <textarea id="mfrReplaceInput" class="mfr-textarea" placeholder="置換後のテキストを入力..." rows="3"></textarea>
+      </div>
+
+      <!-- 操作ボタングループ -->
+      <div class="mfr-actions-bar">
+        <div class="mfr-actions-left">
+          <button type="button" id="mfrBtnFindPrev" class="btn btn-sm" title="前を検索 (Shift+Enter)">前へ</button>
+          <button type="button" id="mfrBtnFindNext" class="btn btn-sm btn-primary" title="次を検索 (Enter / Ctrl+Enter)">次へ</button>
+          <button type="button" id="mfrToggleMatchList" class="btn btn-sm" title="一致箇所の一覧を表示">一覧</button>
+        </div>
+        <div class="mfr-actions-right">
+          <button type="button" id="mfrBtnReplace" class="btn btn-sm" title="現在の一致を置換">置換</button>
+          <button type="button" id="mfrBtnReplaceAll" class="btn btn-sm btn-primary" title="ドキュメント全体をすべて置換">すべて置換</button>
+        </div>
+      </div>
+
+      <!-- 一致箇所一覧コンテナ -->
+      <div id="mfrMatchListContainer" class="mfr-match-list-container">
+        <div class="mfr-match-list-title">一致した箇所一覧:</div>
+        <div id="mfrMatchList" class="mfr-match-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- タグ整合性チェック結果パネル -->
+  <div id="tagIntegrityPanel" class="tag-integrity-panel" role="region" aria-label="タグ整合性チェック結果">
+    <div class="tag-integrity-header">
+      <div class="tag-integrity-title-box">
+        <h3 class="tag-integrity-title">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+            <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
+          </svg>
+          HTMLタグ整合性チェック結果
+        </h3>
+        <div id="tagIntegritySummary" class="tag-integrity-summary"></div>
+      </div>
+      <button type="button" id="tagIntegrityCloseBtn" class="btn btn-icon btn-sm" title="パネルを閉じる" aria-label="閉じる">
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+          <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+        </svg>
+      </button>
+    </div>
+    <div id="tagIntegrityList" class="tag-integrity-list"></div>
+  </div>
 
   <!-- メインスクリプト -->
   <script type="module" src="js/app.js"></script>

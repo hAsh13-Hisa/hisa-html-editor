@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, dialog } from 'electron';
+import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { localPreviewServer } from './local-server.js';
@@ -74,6 +74,11 @@ async function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  if (process.platform !== 'darwin') {
+    mainWindow.setAutoHideMenuBar(true);
+    mainWindow.setMenuBarVisibility(false);
+  }
 }
 
 function setupMenu(win) {
@@ -127,6 +132,12 @@ function setupMenu(win) {
         },
         { type: 'separator' },
         {
+          label: 'ブラウザでプレビュー (&P)',
+          accelerator: 'F12',
+          click: (item, focusedWindow) => sendAction('browserPreview', focusedWindow)
+        },
+        { type: 'separator' },
+        {
           label: 'タブを閉じる (&W)',
           accelerator: 'CmdOrCtrl+W',
           click: (item, focusedWindow) => sendAction('closeTab', focusedWindow)
@@ -166,7 +177,22 @@ function setupMenu(win) {
           accelerator: 'CmdOrCtrl+Alt+Enter',
           click: (item, focusedWindow) => sendAction('replaceAll', focusedWindow)
         },
+        {
+          label: '複数行の検索・置換 (&M)...',
+          accelerator: 'CmdOrCtrl+Shift+F',
+          click: (item, focusedWindow) => sendAction('multilineFindReplace', focusedWindow)
+        },
         { type: 'separator' },
+        {
+          label: '対応するタグへジャンプ',
+          accelerator: 'Alt+J',
+          click: (item, focusedWindow) => sendAction('jumpToMatchingTag', focusedWindow)
+        },
+        {
+          label: 'タグ整合性チェック',
+          accelerator: 'F7',
+          click: (item, focusedWindow) => sendAction('checkTagIntegrity', focusedWindow)
+        },
         {
           label: 'タグで囲む (Wrap Tag)',
           accelerator: 'Alt+W',
@@ -254,6 +280,34 @@ function setupMenu(win) {
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+
+  // HTML側メニューバーからのポップアップ表示用
+  const fileMenuItem = template.find((i) => i.label && i.label.includes('ファイル'));
+  const editMenuItem = template.find((i) => i.label && i.label.includes('編集'));
+  const viewMenuItem = template.find((i) => i.label && i.label.includes('表示'));
+  const helpMenuItem = template.find((i) => i.label && i.label.includes('ヘルプ'));
+
+  const menuMap = {
+    file: fileMenuItem?.submenu ? Menu.buildFromTemplate(fileMenuItem.submenu) : null,
+    edit: editMenuItem?.submenu ? Menu.buildFromTemplate(editMenuItem.submenu) : null,
+    view: viewMenuItem?.submenu ? Menu.buildFromTemplate(viewMenuItem.submenu) : null,
+    help: helpMenuItem?.submenu ? Menu.buildFromTemplate(helpMenuItem.submenu) : null
+  };
+
+  ipcMain.removeHandler('menu:popup');
+  ipcMain.handle('menu:popup', (event, { menuType, x, y }) => {
+    const targetSubmenu = menuMap[menuType];
+    const targetWin = win || mainWindow;
+    if (targetSubmenu && targetWin && !targetWin.isDestroyed()) {
+      targetSubmenu.popup({
+        window: targetWin,
+        x: Math.round(x),
+        y: Math.round(y)
+      });
+      return true;
+    }
+    return false;
+  });
 }
 
 app.whenReady().then(createWindow);

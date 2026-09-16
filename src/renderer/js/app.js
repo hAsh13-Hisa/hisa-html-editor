@@ -7,6 +7,9 @@ import { QuickEditManager } from './extensions/quick-edit.js';
 import { PreviewSync } from './preview-sync.js';
 import { setupContextMenuJa } from './extensions/context-menu-ja.js';
 import { TabManager } from './tab-manager.js';
+import { BrowserPreviewManager } from './extensions/browser-preview.js';
+import { TagMatcher } from './extensions/tag-matcher.js';
+import { MultilineFindReplace } from './extensions/multiline-find-replace.js';
 
 class App {
   constructor() {
@@ -15,6 +18,9 @@ class App {
     this.quickEditManager = null;
     this.wrapTagApi = null;
     this.tabManager = null;
+    this.browserPreviewManager = null;
+    this.tagMatcher = null;
+    this.multilineFindReplace = null;
     this.settings = this.loadSettings();
 
     this.initElements();
@@ -285,26 +291,26 @@ class App {
 
   <div class="grid">
     <div class="card">
-      <h2 class="card-title">ファイル & タブ操作</h2>
+      <h2 class="card-title">ファイル & プレビュー</h2>
       <ul class="key-list">
+        <li class="key-item"><span class="key-label">ブラウザでプレビュー</span><span class="key-combo"><kbd>F12</kbd></span></li>
         <li class="key-item"><span class="key-label">新規タブ作成</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>N</kbd></span></li>
         <li class="key-item"><span class="key-label">ファイルを開く</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>O</kbd></span></li>
         <li class="key-item"><span class="key-label">上書き保存</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>S</kbd></span></li>
         <li class="key-item"><span class="key-label">別名で保存</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></span></li>
-        <li class="key-item"><span class="key-label">現在のタブを閉じる</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>W</kbd></span></li>
-        <li class="key-item"><span class="key-label">タブ切り替え</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>Tab</kbd></span></li>
+        <li class="key-item"><span class="key-label">タブを閉じる</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>W</kbd></span></li>
       </ul>
     </div>
 
     <div class="card">
       <h2 class="card-title">編集 & コーディング支援</h2>
       <ul class="key-list">
+        <li class="key-item"><span class="key-label">対応タグへジャンプ</span><span class="key-combo"><kbd>Alt</kbd>+<kbd>J</kbd></span></li>
+        <li class="key-item"><span class="key-label">タグ整合性チェック</span><span class="key-combo"><kbd>F7</kbd></span></li>
+        <li class="key-item"><span class="key-label">複数行の検索・置換</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></span></li>
         <li class="key-item"><span class="key-label">Emmet 展開</span><span class="key-combo"><kbd>Tab</kbd></span></li>
         <li class="key-item"><span class="key-label">タグで囲む</span><span class="key-combo"><kbd>Alt</kbd>+<kbd>W</kbd></span></li>
         <li class="key-item"><span class="key-label">CSSクイック編集</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>E</kbd></span></li>
-        <li class="key-item"><span class="key-label">検索</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>F</kbd></span></li>
-        <li class="key-item"><span class="key-label">置換</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>R</kbd></span></li>
-        <li class="key-item"><span class="key-label">コメント切替</span><span class="key-combo"><kbd>Ctrl</kbd>+<kbd>/</kbd></span></li>
       </ul>
     </div>
 
@@ -345,6 +351,59 @@ class App {
     // Ctrl+Rで置換ウィジェットを起動（ブラウザのリロードを抑止して置換を実行）
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyR, () => {
       this.editor.getAction('editor.action.startFindReplaceAction')?.run();
+    });
+
+    // 新機能マネージャーの初期化
+    this.browserPreviewManager = new BrowserPreviewManager(this);
+    this.tagMatcher = new TagMatcher(this);
+    this.multilineFindReplace = new MultilineFindReplace(this);
+
+    // 対応するタグへジャンプ (Alt+J / 右クリックメニュー)
+    this.editor.addAction({
+      id: 'hisa.jumpToMatchingTag',
+      label: '対応するタグへジャンプ',
+      keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.KeyJ],
+      contextMenuGroupId: '1_modification',
+      contextMenuOrder: 1.1,
+      run: () => {
+        this.tagMatcher.jumpToMatchingTag();
+      }
+    });
+
+    // タグ整合性チェック (F7 / 右クリックメニュー)
+    this.editor.addAction({
+      id: 'hisa.checkTagIntegrity',
+      label: 'タグ整合性チェック',
+      keybindings: [monaco.KeyCode.F7],
+      contextMenuGroupId: '1_modification',
+      contextMenuOrder: 1.2,
+      run: () => {
+        this.tagMatcher.checkTagIntegrity();
+      }
+    });
+
+    // 複数行の検索・置換 (Ctrl+Shift+F)
+    this.editor.addAction({
+      id: 'hisa.multilineFindReplace',
+      label: '複数行の検索・置換...',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF],
+      contextMenuGroupId: '1_modification',
+      contextMenuOrder: 1.3,
+      run: () => {
+        this.multilineFindReplace.toggle();
+      }
+    });
+
+    // ブラウザでプレビュー (F12)
+    this.editor.addAction({
+      id: 'hisa.browserPreview',
+      label: 'ブラウザでプレビュー',
+      keybindings: [monaco.KeyCode.F12],
+      contextMenuGroupId: 'navigation',
+      contextMenuOrder: 1.4,
+      run: () => {
+        this.browserPreviewManager.previewInDefaultBrowser();
+      }
     });
 
     // イメージMAPビジュアルエディター起動アクション (Alt+M / 右クリックメニュー)
@@ -471,6 +530,30 @@ class App {
   }
 
   initToolbarEvents() {
+    // アプリケーションメニューボタン (ファイル, 編集, 表示, ヘルプ)
+    const menuButtons = [
+      { id: 'menuBtnFile', type: 'file' },
+      { id: 'menuBtnEdit', type: 'edit' },
+      { id: 'menuBtnView', type: 'view' },
+      { id: 'menuBtnHelp', type: 'help' }
+    ];
+
+    menuButtons.forEach(({ id, type }) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const rect = btn.getBoundingClientRect();
+          if (window.electronAPI?.popupMenu) {
+            window.electronAPI.popupMenu(type, {
+              x: rect.left,
+              y: rect.bottom + 2
+            });
+          }
+        });
+      }
+    });
+
     this.newBtn.addEventListener('click', () => this.newFile());
     this.openBtn.addEventListener('click', () => this.openFile());
     this.saveBtn.addEventListener('click', () => this.saveFile());
@@ -535,6 +618,24 @@ class App {
         this.openImageMapEditor();
       });
     }
+
+    // 複数行検索ボタン
+    const openMultilineFindReplaceBtn = document.getElementById('openMultilineFindReplaceBtn');
+    if (openMultilineFindReplaceBtn) {
+      openMultilineFindReplaceBtn.addEventListener('click', () => {
+        this.multilineFindReplace?.toggle();
+      });
+    }
+
+    // 設定メニューからのブラウザ設定モーダル起動
+    const openBrowserSettingsFromMenuBtn = document.getElementById('openBrowserSettingsFromMenuBtn');
+    if (openBrowserSettingsFromMenuBtn) {
+      openBrowserSettingsFromMenuBtn.addEventListener('click', () => {
+        this.settingsMenu?.classList.remove('is-open');
+        this.settingsBtn?.setAttribute('aria-expanded', 'false');
+        this.browserPreviewManager?.openBrowserSettingsDialog();
+      });
+    }
   }
 
   initMenuListener() {
@@ -547,6 +648,10 @@ class App {
         case 'saveFile': this.saveFile(); break;
         case 'saveAsFile': this.saveAsFile(); break;
         case 'closeTab': this.tabManager?.closeActiveTab(); break;
+        case 'browserPreview': this.browserPreviewManager?.previewInDefaultBrowser(); break;
+        case 'jumpToMatchingTag': this.tagMatcher?.jumpToMatchingTag(); break;
+        case 'checkTagIntegrity': this.tagMatcher?.checkTagIntegrity(); break;
+        case 'multilineFindReplace': this.multilineFindReplace?.toggle(); break;
         case 'find':
           this.editor?.focus();
           this.editor?.getAction('actions.find')?.run();
@@ -581,6 +686,27 @@ class App {
         return;
       }
 
+      // F12: ブラウザでプレビュー (Dreamweaver風)
+      if (e.key === 'F12') {
+        e.preventDefault();
+        this.browserPreviewManager?.previewInDefaultBrowser();
+        return;
+      }
+
+      // F7: タグ整合性チェック
+      if (e.key === 'F7') {
+        e.preventDefault();
+        this.tagMatcher?.checkTagIntegrity();
+        return;
+      }
+
+      // Alt+J: 対応するタグへジャンプ
+      if (e.altKey && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        this.tagMatcher?.jumpToMatchingTag();
+        return;
+      }
+
       // Alt+M: イメージMAPビジュアルエディター
       if (e.altKey && e.key.toLowerCase() === 'm') {
         e.preventDefault();
@@ -591,6 +717,12 @@ class App {
       const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
       if (isCtrlOrCmd) {
+        // Ctrl+Shift+F: 複数行の検索・置換
+        if (e.shiftKey && e.key.toLowerCase() === 'f') {
+          e.preventDefault();
+          this.multilineFindReplace?.toggle();
+          return;
+        }
         // Ctrl+R: 置換ウィジェットを開く (リロード誤爆防止 & 置換実行)
         if (e.key.toLowerCase() === 'r') {
           e.preventDefault();
@@ -1374,6 +1506,7 @@ const SHORTCUTS_DATA = [
       { desc: 'ファイルを開く', keys: ['Ctrl', 'O'] },
       { desc: '上書き保存', keys: ['Ctrl', 'S'] },
       { desc: '名前を付けて保存', keys: ['Ctrl', 'Shift', 'S'] },
+      { desc: 'ブラウザでプレビュー', keys: ['F12'], note: 'Dreamweaver風・既定ブラウザで開く (保存確認付き)' },
       { desc: '現在のタブを閉じる', keys: ['Ctrl', 'W'] },
       { desc: '次のタブへ切り替え', keys: ['Ctrl', 'Tab'], note: 'または Ctrl+PageDown' },
       { desc: '前のタブへ切り替え', keys: ['Ctrl', 'Shift', 'Tab'], note: 'または Ctrl+PageUp' }
@@ -1382,6 +1515,9 @@ const SHORTCUTS_DATA = [
   {
     category: '編集 & コーディング支援',
     items: [
+      { desc: '対応するタグへジャンプ', keys: ['Alt', 'J'], note: '開始タグ⇔閉じタグ間を即座にジャンプ' },
+      { desc: 'タグ整合性チェック', keys: ['F7'], note: '閉じタグの過不足・未終了タグを検出' },
+      { desc: '複数行の検索・置換', keys: ['Ctrl', 'Shift', 'F'], note: 'ブロック単位の高度な検索・置換パネル' },
       { desc: 'Emmet 展開', keys: ['Tab'], note: '例: ul>li*3 + Tab' },
       { desc: 'タグで囲む (Wrap with Tag)', keys: ['Alt', 'W'] },
       { desc: 'CSSクイック編集 (Quick Edit)', keys: ['Ctrl', 'E'], note: 'クラス/IDのCSSをインライン編集' },

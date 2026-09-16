@@ -1,8 +1,9 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron';
+import { ipcMain, dialog, BrowserWindow, shell } from 'electron';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import mime from 'mime-types';
 import { localPreviewServer } from './local-server.js';
 import { readFileWithAutoEncoding, writeFileWithEncoding } from './encoding-helper.js';
@@ -339,5 +340,152 @@ export function setupIpc(mainWindow) {
       return true;
     }
     return false;
+  });
+
+  // --- 外部ブラウザプレビュー機能 ---
+  // ブラウザで開く
+  ipcMain.handle('preview:openInBrowser', async (event, { filePath, browserPath }) => {
+    try {
+      let targetUrl = '';
+      if (filePath) {
+        if (localPreviewServer.rootDir && localPreviewServer.port) {
+          const rel = path.relative(localPreviewServer.rootDir, filePath).replace(/\\/g, '/');
+          if (!rel.startsWith('..')) {
+            targetUrl = `http://127.0.0.1:${localPreviewServer.port}/${encodeURI(rel)}`;
+          }
+        }
+        if (!targetUrl) {
+          targetUrl = pathToFileURL(filePath).href;
+        }
+      } else {
+        // 未保存などの場合はライブプレビューURL
+        targetUrl = `http://127.0.0.1:${localPreviewServer.port}/__preview_live.html`;
+      }
+
+      if (browserPath && browserPath.trim()) {
+        const cleanPath = browserPath.trim();
+        if (process.platform === 'darwin' && cleanPath.endsWith('.app')) {
+          spawn('open', ['-a', cleanPath, targetUrl], { detached: true, stdio: 'ignore' }).unref();
+        } else {
+          spawn(cleanPath, [targetUrl], { detached: true, stdio: 'ignore' }).unref();
+        }
+      } else {
+        await shell.openExternal(targetUrl);
+      }
+      return { success: true, url: targetUrl };
+    } catch (err) {
+      console.error('[IPC] preview:openInBrowser error:', err);
+      return { success: false, error: err.message };
+    }
+  });
+
+  // インストール済みブラウザの自動検出
+  ipcMain.handle('browser:detectInstalled', async () => {
+    const detected = [];
+    const isWin = process.platform === 'win32';
+    const isMac = process.platform === 'darwin';
+
+    if (isWin) {
+      const candidates = [
+        {
+          name: 'Google Chrome',
+          paths: [
+            path.join(process.env['PROGRAMFILES'] || 'C:\\Program Files', 'Google\\Chrome\\Application\\chrome.exe'),
+            path.join(process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)', 'Google\\Chrome\\Application\\chrome.exe'),
+            path.join(process.env['LOCALAPPDATA'] || '', 'Google\\Chrome\\Application\\chrome.exe')
+          ]
+        },
+        {
+          name: 'Microsoft Edge',
+          paths: [
+            path.join(process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)', 'Microsoft\\Edge\\Application\\msedge.exe'),
+            path.join(process.env['PROGRAMFILES'] || 'C:\\Program Files', 'Microsoft\\Edge\\Application\\msedge.exe')
+          ]
+        },
+        {
+          name: 'Mozilla Firefox',
+          paths: [
+            path.join(process.env['PROGRAMFILES'] || 'C:\\Program Files', 'Mozilla Firefox\\firefox.exe'),
+            path.join(process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)', 'Mozilla Firefox\\firefox.exe'),
+            path.join(process.env['LOCALAPPDATA'] || '', 'Mozilla Firefox\\firefox.exe')
+          ]
+        },
+        {
+          name: 'Brave',
+          paths: [
+            path.join(process.env['PROGRAMFILES'] || 'C:\\Program Files', 'BraveSoftware\\Brave-Browser\\Application\\brave.exe'),
+            path.join(process.env['LOCALAPPDATA'] || '', 'BraveSoftware\\Brave-Browser\\Application\\brave.exe')
+          ]
+        },
+        {
+          name: 'Vivaldi',
+          paths: [
+            path.join(process.env['LOCALAPPDATA'] || '', 'Vivaldi\\Application\\vivaldi.exe'),
+            path.join(process.env['PROGRAMFILES'] || 'C:\\Program Files', 'Vivaldi\\Application\\vivaldi.exe')
+          ]
+        }
+      ];
+
+      for (const item of candidates) {
+        for (const p of item.paths) {
+          if (p && fsSync.existsSync(p)) {
+            detected.push({
+              id: item.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+              name: item.name,
+              path: p
+            });
+            break;
+          }
+        }
+      }
+    } else if (isMac) {
+      const macCandidates = [
+        { name: 'Google Chrome', path: '/Applications/Google Chrome.app' },
+        { name: 'Mozilla Firefox', path: '/Applications/Firefox.app' },
+        { name: 'Safari', path: '/Applications/Safari.app' },
+        { name: 'Microsoft Edge', path: '/Applications/Microsoft Edge.app' },
+        { name: 'Brave Browser', path: '/Applications/Brave Browser.app' }
+      ];
+      for (const item of macCandidates) {
+        if (fsSync.existsSync(item.path)) {
+          detected.push({
+            id: item.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+            name: item.name,
+            path: item.path
+          });
+        }
+      }
+    }
+
+    return detected;
+  });
+
+  // ブラウザ実行ファイル選択ダイアログ
+  ipcMain.handle('dialog:selectBrowserExe', async () => {
+    try {
+      const isWin = process.platform === 'win32';
+      const options = {
+        title: 'ブラウザ実行ファイルを選択',
+        filters: isWin
+          ? [
+              { name: '実行ファイル (*.exe)', extensions: ['exe'] },
+              { name: 'すべてのファイル', extensions: ['*'] }
+            ]
+          : [
+              { name: 'アプリケーション (*.app)', extensions: ['app'] },
+              { name: 'すべてのファイル', extensions: ['*'] }
+            ],
+        properties: ['openFile']
+      };
+
+      const result = await dialog.showOpenDialog(mainWindow, options);
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+      return result.filePaths[0];
+    } catch (err) {
+      console.error('[IPC] dialog:selectBrowserExe error:', err);
+      return null;
+    }
   });
 }

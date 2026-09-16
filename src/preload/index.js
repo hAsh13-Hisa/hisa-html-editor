@@ -46,5 +46,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const handler = (event, data) => callback(data);
     ipcRenderer.on('image-map:load-data', handler);
     return () => ipcRenderer.removeListener('image-map:load-data', handler);
-  }
+  },
+
+  // 外部ブラウザプレビュー
+  openInBrowser: (options) => ipcRenderer.invoke('preview:openInBrowser', options),
+  detectInstalledBrowsers: () => ipcRenderer.invoke('browser:detectInstalled'),
+  selectBrowserExe: () => ipcRenderer.invoke('dialog:selectBrowserExe'),
+
+  // アプリケーションメニューポップアップ (HTMLメニューバー用)
+  popupMenu: (menuType, rect) => ipcRenderer.invoke('menu:popup', { menuType, x: rect.x, y: rect.y })
 });

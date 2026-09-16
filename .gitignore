@@ -9,3 +9,6 @@ dist-package/
 .DS_Store
 Thumbs.db
 *.log
+
+# Internal docs / notes
+requirements_definition.md

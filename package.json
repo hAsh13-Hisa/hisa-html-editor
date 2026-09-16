@@ -1,6 +1,6 @@
 {
   "name": "hisa-html-editor",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Dreamweaver代替の基本編集機能を備えた高機能デスクトップHTMLエディタ",
   "type": "module",
   "main": "src/main/index.js",
@@ -19,6 +19,10 @@
   ],
   "author": "Hisa",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hAsh13-Hisa/hisa-html-editor.git"
+  },
   "dependencies": {
     "emmet-monaco-es": "^5.4.1",
     "encoding-japanese": "^2.3.0",
