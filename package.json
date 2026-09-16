@@ -9,6 +9,8 @@
     "build:renderer": "vite build",
     "build:win": "vite build && electron-builder --win && node scripts/make-portable-zip.js",
     "publish:win": "vite build && electron-builder --win --publish always && node scripts/make-portable-zip.js",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
     "build:mac": "vite build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip",
     "pack": "vite build && electron-builder --dir"
   },
